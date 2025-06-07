@@ -40,9 +40,11 @@ EXIT;
 ## 使用数据库
 
 ```sql
-USE <database_name>;
+USE employees;
 ```
 （3）
+
+> 输出：Database changed
 
 ---
 
@@ -53,6 +55,14 @@ SHOW DATABASES;
 ```
 （4）
 
+| Database            |
+|---------------------|
+| information_schema  |
+| mysql               |
+| performance_schema  |
+| sys                 |
+| employees           |
+
 ---
 
 ## 查看数据表
@@ -62,16 +72,32 @@ SHOW TABLES;
 ```
 （5）
 
+| Tables_in_employees |
+|---------------------|
+| departments         |
+| employees           |
+| salaries            |
+| titles              |
+
 ---
 
 ## 查看表结构
 
 ```sql
-SHOW COLUMNS FROM <table_name>;
+SHOW COLUMNS FROM employees;
 -- 或
-DESCRIBE <table_name>;
+DESCRIBE employees;
 ```
 （6）
+
+| Field      | Type           | Null | Key | Default | Extra          |
+|------------|----------------|------|-----|---------|----------------|
+| emp_no     | int            | NO   | PRI | NULL    | auto_increment |
+| birth_date | date           | NO   |     | NULL    |                |
+| first_name | varchar(14)    | NO   |     | NULL    |                |
+| last_name  | varchar(16)    | NO   |     | NULL    |                |
+| gender     | enum('M','F')  | NO   |     | NULL    |                |
+| hire_date  | date           | NO   |     | NULL    |                |
 
 ---
 
@@ -82,6 +108,13 @@ SHOW STATUS;
 ```
 （7）
 
+| Variable_name     | Value   |
+|-------------------|---------|
+| Aborted_clients   | 0       |
+| Threads_connected | 3       |
+| Uptime            | 4523    |
+| ...               | ...     |
+
 ---
 
 ## 查看当前用户权限
@@ -91,6 +124,10 @@ SHOW GRANTS;
 ```
 （8）
 
+| Grants for root@localhost                                                                  |
+|---------------------------------------------------------------------------------------------|
+| GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY PASSWORD '****' WITH GRANT OPTION |
+
 ---
 
 ## 查看错误与警告
@@ -99,6 +136,19 @@ SHOW GRANTS;
 SHOW ERRORS;
 SHOW WARNINGS;
 ```
+（9）
+
+| Level | Code | Message                          |
+|-------|------|----------------------------------|
+| Error | 1064 | You have an error in your syntax |
+
+或：
+
+| Level   | Code | Message                          |
+|---------|------|----------------------------------|
+| Warning | 1366 | Incorrect string value for 'xx'. |
+
+---
 
 # MySQL 基础使用：检索数据
 
@@ -111,20 +161,32 @@ SHOW WARNINGS;
 ## 基本 SELECT 查询
 
 ```sql
-SELECT column_name
-FROM table_name;
+SELECT name
+FROM students;
 ```
 （1）
+
+| name      |
+|-----------|
+| Alice     |
+| Bob       |
+| Charlie   |
 
 ---
 
 ## 查询多个列
 
 ```sql
-SELECT column1, column2, ...
-FROM table_name;
+SELECT name, age
+FROM students;
 ```
 （2）
+
+| name    | age |
+|---------|-----|
+| Alice   | 20  |
+| Bob     | 21  |
+| Charlie | 22  |
 
 ---
 
@@ -132,56 +194,173 @@ FROM table_name;
 
 ```sql
 SELECT *
-FROM table_name;
+FROM students;
 ```
 （3）
+
+| id | name    | age | grade |
+|----|---------|-----|--------|
+| 1  | Alice   | 20  | A      |
+| 2  | Bob     | 21  | B      |
+| 3  | Charlie | 22  | A      |
 
 ---
 
 ## 去重查询
 
 ```sql
-SELECT DISTINCT column_name
-FROM table_name;
+SELECT DISTINCT grade
+FROM students;
 ```
 （4）
+
+| grade |
+|--------|
+| A      |
+| B      |
 
 ---
 
 ## 限制返回行数
 
 ```sql
-SELECT column_name
-FROM table_name
-LIMIT N;
+SELECT name
+FROM students
+LIMIT 2;
 ```
 （5）
 
-说明：
-- `LIMIT N`：返回前 N 行数据
+| name    |
+|---------|
+| Alice   |
+| Bob     |
 
 ---
 
 ## 分页查询
 
 ```sql
-SELECT column_name
-FROM table_name
-LIMIT offset, count;
+SELECT name
+FROM students
+LIMIT 1, 2;
 ```
 （6）
 
 说明：
-- `offset` 表示起始行索引（从 0 开始）
-- `count` 表示返回的行数
+- `LIMIT 1, 2`：跳过第 1 行，从第 2 行开始返回 2 行数据（行号从 0 开始）
 
-示例：
+| name    |
+|---------|
+| Bob     |
+| Charlie |
+
+---
+
+# MySQL 基础使用：排序检索数据
+
+日期：2025-06-07  
+作者：SeraphimWei  
+参考书籍：MySQL Crash Course（第 5 章）
+
+---
+
+## 按列排序（默认升序，A → Z）
 
 ```sql
 SELECT name
 FROM students
-LIMIT 10, 5;
--- 从第 11 行开始返回 5 行
+ORDER BY name;
 ```
+（1）
+
+| name    |
+|---------|
+| Alice   |
+| Bob     |
+| Charlie |
+
+---
+
+## 多列排序（按优先级排序）
+
+```sql
+SELECT name, grade
+FROM students
+ORDER BY grade, name;
+```
+（2）
+
+| name    | grade |
+|---------|--------|
+| Alice   | A      |
+| Charlie | A      |
+| Bob     | B      |
+
+---
+
+## 降序排列
+
+```sql
+SELECT age
+FROM students
+ORDER BY age DESC;
+```
+（3）
+
+| age |
+|-----|
+| 22  |
+| 21  |
+| 20  |
+
+---
+
+## 多列排序 + 降序优先
+
+```sql
+SELECT name, age
+FROM students
+ORDER BY age DESC, name;
+```
+（4）
+
+| name    | age |
+|---------|-----|
+| Charlie | 22  |
+| Bob     | 21  |
+| Alice   | 20  |
+
+---
+
+## 明确指定升序
+
+```sql
+SELECT name
+FROM students
+ORDER BY name ASC;
+```
+（5）
+
+| name    |
+|---------|
+| Alice   |
+| Bob     |
+| Charlie |
+
+---
+
+## 查找最大值（结合 LIMIT）
+
+```sql
+SELECT age
+FROM students
+ORDER BY age DESC
+LIMIT 1;
+```
+（6）
+
+| age |
+|-----|
+| 22  |
 
 ---
