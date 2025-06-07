@@ -660,3 +660,185 @@ WHERE gender = 'female' AND (age < 18 OR age > 60);
 | Eve   |
 
 ---
+
+# MySQL 基础使用：用通配符进行过滤
+
+日期：2025-06-07  
+作者：SeraphimWei  
+参考书籍：MySQL Crash Course（第 8 章）
+
+---
+
+## 通配符过滤简介（LIKE）
+
+`LIKE` 表示使用通配符进行模式匹配，而不是使用 `=` 进行精确匹配。
+
+常见通配符：
+
+| 通配符 | 含义                         |
+|--------|------------------------------|
+| `%`    | 任意长度的任意字符（含0个） |
+| `_`    | 任意单个字符                 |
+
+---
+
+## 使用 `%` 匹配以某字符开头
+
+```sql
+SELECT name
+FROM users
+WHERE name LIKE 'Jet%';
+```
+（1）
+
+说明：匹配所有以 `Jet` 开头的字符串，如 `Jet`, `Jetson`, `Jet Lee`。
+
+---
+
+## 使用 `%` 匹配包含某关键词
+
+```sql
+SELECT name
+FROM users
+WHERE name LIKE '%xxx%';
+```
+（2）
+
+说明：匹配任意包含 `xxx` 的字符串（前后都有可能出现其他字符）
+
+---
+
+## 使用 `%` 匹配以某字符开头和以某字符结尾
+
+```sql
+SELECT name
+FROM users
+WHERE name LIKE 's%e';
+```
+（3）
+
+说明：匹配以 `s` 开头、以 `e` 结尾的任意字符串，如 `Steve`、`spare`。
+
+---
+
+## `%` 可匹配 0 个字符
+
+```sql
+SELECT name
+FROM users
+WHERE name LIKE 'Ann%';
+```
+
+匹配 `Ann`、`Annabelle`，也包括只包含 `Ann` 的项。
+
+---
+
+## 注意：尾部空格影响匹配
+
+示例数据：
+
+| name      |
+|-----------|
+| 'Bob'     |
+| 'Bob '    |
+
+查询：
+
+```sql
+SELECT name
+FROM users
+WHERE name LIKE 'Bob';
+```
+
+说明：只会匹配 `'Bob'`，不会匹配 `'Bob '`（含空格）
+
+---
+
+## 注意：LIKE 不会匹配 NULL
+
+```sql
+SELECT name
+FROM users
+WHERE name LIKE '%a%';
+```
+
+说明：`name IS NULL` 的记录不会匹配，即使有 `%`，NULL 也不参与字符串匹配。
+
+---
+
+## 使用 `_` 通配符：匹配单个任意字符
+
+```sql
+SELECT code
+FROM products
+WHERE code LIKE '_A%';
+```
+（4）
+
+说明：匹配第二位是 `A` 的字符串，如 `1A45`、`BA78`，但不匹配 `AA123`。
+
+---
+
+## 下划线 `_` 示例
+
+| code   |
+|--------|
+| A123   |
+| AB23   |
+| BA23   |
+| 1A45   |
+| A_23   |
+
+查询示例：
+
+```sql
+SELECT code
+FROM products
+WHERE code LIKE '__23';
+```
+
+结果匹配：`AB23`, `BA23`, `A_23`（前两位任意字符，后两位固定是 2 和 3）
+
+---
+
+## 小结：通配符使用建议
+
+| 特性               | 建议/说明                             |
+|--------------------|----------------------------------------|
+| `%` 匹配任意字符   | 尾部匹配较快，前置 `%` 效率差          |
+| `_` 匹配一个字符   | 用于匹配特定位数                      |
+| 匹配 NULL 无效     | `LIKE` 不会匹配 NULL 值               |
+| 尾部空格敏感       | `LIKE 'Bob'` 不等于 `LIKE 'Bob '`     |
+| 不建议滥用         | `%xxx%` 查询无法使用索引，性能较差     |
+
+---
+
+## 示例表：users
+
+| id | name      |
+|----|-----------|
+| 1  | Jet       |
+| 2  | Jetson    |
+| 3  | Steve     |
+| 4  | sarge     |
+| 5  | Jet Lee   |
+| 6  | Bob       |
+| 7  | Bob       |
+| 8  | Bob       |
+| 9  | NULL      |
+
+```sql
+SELECT name
+FROM users
+WHERE name LIKE 'Jet%';
+```
+
+返回结果：
+
+| name    |
+|---------|
+| Jet     |
+| Jetson  |
+| Jet Lee |
+
+---
