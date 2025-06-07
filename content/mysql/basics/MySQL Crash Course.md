@@ -503,3 +503,160 @@ WHERE phone IS NOT NULL;
 | 15555555555  |
 
 ---
+
+# MySQL 基础使用：数据过滤
+
+日期：2025-06-07  
+作者：SeraphimWei  
+参考书籍：MySQL Crash Course（第 7 章）
+
+---
+
+## 组合 WHERE 条件（AND）
+
+```sql
+SELECT c1, c2, c3
+FROM table_name
+WHERE c1 = 't1' AND c2 <= 100;
+```
+（1）
+
+说明：必须同时满足所有条件（逻辑与）
+
+---
+
+## 使用 OR（或）
+
+```sql
+SELECT name, age
+FROM users
+WHERE age < 18 OR age > 60;
+```
+（2）
+
+说明：只要满足任一条件即可（逻辑或）
+
+---
+
+## 计算次序：AND 优先于 OR
+
+```sql
+SELECT name
+FROM users
+WHERE gender = 'female' AND age > 18 OR score >= 90;
+```
+（3）
+
+等价于：
+
+```sql
+-- 实际执行顺序：
+SELECT name
+FROM users
+WHERE (gender = 'female' AND age > 18) OR score >= 90;
+```
+
+说明：AND 优先于 OR，建议用括号明确表达逻辑
+
+---
+
+## 使用括号明确优先级
+
+```sql
+SELECT name
+FROM users
+WHERE gender = 'male' AND (age < 18 OR age > 60);
+```
+（4）
+
+说明：仅当性别为男，且年龄不在 18 到 60 之间时才匹配
+
+---
+
+## 使用 IN 判断多个值
+
+```sql
+SELECT name
+FROM students
+WHERE class IN ('A1', 'A2', 'A3');
+```
+（5）
+
+说明：等价于 `class = 'A1' OR class = 'A2' OR class = 'A3'`，常用于多值匹配
+
+---
+
+## 高级用法：IN + 子查询
+
+```sql
+SELECT name
+FROM users
+WHERE dept_id IN (
+  SELECT id FROM departments WHERE location = 'Beijing'
+);
+```
+（6）
+
+说明：从子查询结果中取值匹配，常用于多表过滤
+
+---
+
+## 使用 NOT 排除条件
+
+```sql
+SELECT name
+FROM employees
+WHERE NOT (department = 'HR');
+```
+（7）
+
+或与 IN 配合：
+
+```sql
+SELECT name
+FROM students
+WHERE class NOT IN ('A1', 'A2');
+```
+（8）
+
+---
+
+## WHERE 逻辑操作符对比表
+
+| 操作符 | 描述               | 示例                                      |
+|--------|--------------------|-------------------------------------------|
+| AND    | 与（同时满足）     | `WHERE age > 18 AND gender = 'male'`      |
+| OR     | 或（任一满足）     | `WHERE age < 18 OR age > 60`              |
+| ()     | 括号控制优先级     | `WHERE (a AND b) OR c`                    |
+| IN     | 属于某集合         | `WHERE country IN ('US', 'UK', 'CN')`     |
+| NOT    | 非，取反           | `WHERE NOT status = 'done'`               |
+| NOT IN | 不属于某集合       | `WHERE dept NOT IN ('HR', 'Sales')`       |
+
+---
+
+## 示例数据表：users
+
+| id | name  | age | gender | dept     |
+|----|-------|-----|--------|----------|
+| 1  | Alice | 25  | female | HR       |
+| 2  | Bob   | 17  | male   | Dev      |
+| 3  | Carol | 65  | female | Finance  |
+| 4  | Dave  | 30  | male   | Sales    |
+| 5  | Eve   | 15  | female | HR       |
+
+**示例：**
+
+```sql
+SELECT name
+FROM users
+WHERE gender = 'female' AND (age < 18 OR age > 60);
+```
+
+**返回：**
+
+| name  |
+|-------|
+| Carol |
+| Eve   |
+
+---
